@@ -12,10 +12,19 @@ class ScreenshotApp:
     def __init__(self, master):
         self.master = master
         self.master.title("Screenshot App")
-        self.master.geometry("300x200")
+        self.master.geometry("400x250")  # Increased size for new widgets
 
         self.start_x = self.start_y = self.end_x = None
         self.rect = None
+        self.selected_monitor = 1  # Default to monitor 1
+
+        # Toggle Monitor Button
+        self.toggle_button = tk.Button(master, text="Switch to Monitor 2", command=self.toggle_monitor)
+        self.toggle_button.pack(pady=10)
+
+        # Label to show selected monitor
+        self.monitor_label = tk.Label(master, text=f"Selected Monitor: {self.selected_monitor}")
+        self.monitor_label.pack(pady=10)
 
         self.select_button = tk.Button(master, text="Select Area", command=self.select_area)
         self.select_button.pack(pady=10)
@@ -25,6 +34,20 @@ class ScreenshotApp:
 
         self.active_window_button = tk.Button(master, text="Capture Active Window", command=self.capture_active_window)
         self.active_window_button.pack(pady=10)
+
+    def toggle_monitor(self):
+        # Toggle between monitors 1 and 2
+        if self.selected_monitor == 1:
+            self.selected_monitor = 2
+            self.toggle_button.config(text="Switch to Monitor 1")
+        else:
+            self.selected_monitor = 1
+            self.toggle_button.config(text="Switch to Monitor 2")
+        
+        self.update_monitor_label()
+
+    def update_monitor_label(self):
+        self.monitor_label.config(text=f"Selected Monitor: {self.selected_monitor}")
 
     def select_area(self):
         self.master.withdraw()  # Hide the main window
@@ -38,6 +61,17 @@ class ScreenshotApp:
         self.canvas.bind("<ButtonPress-1>", self.on_button_press)
         self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_button_release)
+
+        # Ensure the canvas has focus
+        self.canvas.focus_set()
+
+        # Bind Escape key to canvas
+        self.canvas.bind("<Escape>", self.cancel_selection)
+
+    def cancel_selection(self, event):
+        # Close the canvas and restore the main window
+        self.screen_canvas.destroy()
+        self.master.deiconify()  # Show the main window again
 
     def on_button_press(self, event):
         self.start_x = event.x
@@ -73,7 +107,8 @@ class ScreenshotApp:
         self.master.after(200, self.take_full_screen_screenshot)
 
     def take_full_screen_screenshot(self):
-        self.take_screenshot()
+        monitor_region = self.get_monitor_region()
+        self.take_screenshot(monitor_region)
         self.master.deiconify()
 
     def capture_active_window(self):
@@ -93,6 +128,16 @@ class ScreenshotApp:
         else:
             messagebox.showerror("Error", "No active window found")
         self.master.deiconify()
+
+    def get_monitor_region(self):
+        if self.selected_monitor == 1:
+            # Define the region for monitor 1
+            return (0, 0, 1920, 1080)  # Adjust to your monitor's resolution
+        elif self.selected_monitor == 2:
+            # Define the region for monitor 2
+            return (1920, 0, 3840, 1080)  # Adjust to your monitor's resolution
+        else:
+            return None
 
     def take_screenshot(self, region=None):
         save_path = "screenshots"
