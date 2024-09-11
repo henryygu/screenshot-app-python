@@ -1,12 +1,12 @@
+import os
+from datetime import datetime
 import tkinter as tk
 from tkinter import messagebox
-from PIL import ImageGrab, Image, ImageTk
-import pyautogui
-from datetime import datetime
-import os
 import subprocess
 import platform
 from functools import partial
+from PIL import ImageGrab, Image, ImageTk
+import pyautogui
 from screeninfo import get_monitors
 
 ImageGrab.grab = partial(ImageGrab.grab, all_screens=True)
